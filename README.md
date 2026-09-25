@@ -123,7 +123,18 @@ npm run start            # start the production server
 ## Enabling a real LLM (optional)
 
 The default `local` provider does genuine grammar analysis offline. To use a
-cloud LLM instead, set these in `.env`:
+cloud LLM instead, choose a provider in `.env`.
+
+**Google Gemini:**
+
+```env
+AI_PROVIDER="gemini"
+GEMINI_API_KEY="your-gemini-key"          # from https://aistudio.google.com/app/apikey
+GEMINI_MODEL="gemini-1.5-flash"
+GEMINI_BASE_URL="https://generativelanguage.googleapis.com/v1beta"
+```
+
+**OpenAI-compatible:**
 
 ```env
 AI_PROVIDER="openai"
@@ -134,7 +145,8 @@ OPENAI_MODEL="gpt-4o-mini"
 
 The API key is used **server-side only** and is never sent to the browser. If a
 network/API error occurs, the app automatically falls back to the offline
-provider so the learner is never stuck.
+provider so the learner is never stuck. **Never commit your real key** — keep it
+in `.env` (gitignored) or your host's environment variables.
 
 See [`docs/API.md`](docs/API.md) for the full API reference and
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the folder structure and how

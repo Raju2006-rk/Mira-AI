@@ -16,6 +16,7 @@ speakmate/
 │   │   │   ├── types.ts       #   AIProvider interface + DTOs
 │   │   │   ├── local-provider.ts   #   Offline rule-based tutor (default)
 │   │   │   ├── openai-provider.ts  #   OpenAI-compatible adapter (+ fallback)
+│   │   │   ├── gemini-provider.ts  #   Google Gemini adapter (+ fallback)
 │   │   │   └── index.ts       #   getAIProvider() — env-driven selection
 │   │   ├── auth/
 │   │   │   ├── session.ts     #   JWT session cookies (jose)
