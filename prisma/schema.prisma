@@ -1,0 +1,200 @@
+// SpeakMate AI — Prisma schema
+// Phase 1 covers the core learning loop. Additional entities from the full
+// spec (RoleplaySession, InterviewSession, Achievement, Subscription, etc.)
+// are included as forward-compatible models so later phases can build on them.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum EnglishLevel {
+  BEGINNER
+  ELEMENTARY
+  INTERMEDIATE
+  UPPER_INTERMEDIATE
+  ADVANCED
+}
+
+enum ConversationMode {
+  CONVERSATION
+  TEACHER
+  CORRECTION
+  INTERVIEW
+  ROLEPLAY
+  PRONUNCIATION
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum MistakeCategory {
+  GRAMMAR
+  VOCABULARY
+  SENTENCE_FORMATION
+  PRONUNCIATION
+  FLUENCY
+  OTHER
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  profile        Profile?
+  settings       UserSettings?
+  conversations  Conversation[]
+  mistakes       UserMistake[]
+  userVocabulary UserVocabulary[]
+  progress       LessonProgress[]
+  streak         DailyStreak?
+
+  @@index([role])
+}
+
+model Profile {
+  id            String       @id @default(cuid())
+  userId        String       @unique
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level         EnglishLevel @default(BEGINNER)
+  supportLang   String       @default("en") // en, te, hi, ta, kn, ml, bn, mr
+  goals         String[]     @default([])   // e.g. ["interview","daily_conversation"]
+  onboarded     Boolean      @default(false)
+  confidenceScore Int        @default(50)   // 0-100 learning indicator, not a measurement
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model UserSettings {
+  id                 String  @id @default(cuid())
+  userId             String  @unique
+  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  voiceEnabled       Boolean @default(true)
+  speakingRate       Float   @default(1.0) // TTS rate
+  notificationsOn    Boolean @default(true)
+  saveConversationHistory Boolean @default(true)
+  updatedAt          DateTime @updatedAt
+}
+
+model Conversation {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String           @default("Chat with Mira")
+  mode      ConversationMode @default(CONVERSATION)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  messages ConversationMessage[]
+
+  @@index([userId])
+}
+
+model ConversationMessage {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           MessageRole
+  content        String
+  // Optional structured coaching feedback attached to a user turn's reply.
+  correction     Json?
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
+}
+
+model UserMistake {
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  original    String
+  corrected   String
+  category    MistakeCategory @default(GRAMMAR)
+  explanation String
+  occurrences Int             @default(1)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([userId])
+}
+
+model Vocabulary {
+  id            String   @id @default(cuid())
+  word          String   @unique
+  meaning       String
+  example       String
+  synonyms      String[] @default([])
+  usageNote     String   @default("")
+  createdAt     DateTime @default(now())
+
+  userVocabulary UserVocabulary[]
+}
+
+model UserVocabulary {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vocabularyId String
+  vocabulary   Vocabulary @relation(fields: [vocabularyId], references: [id], onDelete: Cascade)
+  // Spaced-review scheduling
+  reviewCount  Int        @default(0)
+  nextReviewAt DateTime   @default(now())
+  createdAt    DateTime   @default(now())
+
+  @@unique([userId, vocabularyId])
+  @@index([userId])
+}
+
+model Lesson {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  day         Int // position in the plan, e.g. Day 1..30
+  title       String
+  description String
+  concept     String
+  createdAt   DateTime @default(now())
+
+  progress LessonProgress[]
+}
+
+model LessonProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId    String
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completed   Boolean  @default(false)
+  score       Int      @default(0) // 0-100 learning indicator
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+}
+
+model DailyStreak {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  current       Int      @default(0)
+  longest       Int      @default(0)
+  lastActiveDay DateTime?
+  updatedAt     DateTime @updatedAt
+}
