@@ -1,11 +1,22 @@
 import { prisma } from "@/lib/db";
 import { registerSchema } from "@/lib/validation";
 import { hashPassword } from "@/lib/auth/password";
-import { setSessionCookie } from "@/lib/auth/session";
 import { handler, ok, fail } from "@/lib/api";
 
 export const runtime = "nodejs";
 
+/**
+ * Account creation only. This route hashes the password, creates the `User`
+ * with its default `Profile`/`UserSettings`/`DailyStreak` records, and returns
+ * the new user.
+ *
+ * It does NOT establish a session. With the Auth.js Credentials provider,
+ * signing a user in from a route handler after programmatic creation is not
+ * reliable server-side (the session is issued by the Auth.js callback flow).
+ * Instead, the session is established client-side: after a successful register
+ * the client (AuthForm) calls `signIn("credentials", { email, password })` to
+ * auto-login. (Req 3.4)
+ */
 export const POST = handler(async (req: Request) => {
   const body = await req.json();
   const { name, email, password } = registerSchema.parse(body);
@@ -25,13 +36,6 @@ export const POST = handler(async (req: Request) => {
       settings: { create: {} },
       streak: { create: {} },
     },
-  });
-
-  await setSessionCookie({
-    userId: user.id,
-    email: user.email,
-    role: user.role,
-    name: user.name,
   });
 
   return ok({

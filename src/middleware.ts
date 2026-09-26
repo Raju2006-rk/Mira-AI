@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { verifySessionToken, SESSION_COOKIE_NAME } from "@/lib/auth/session";
+import { getToken } from "next-auth/jwt";
+import { SESSION_COOKIE_NAME } from "@/lib/auth/session";
 
 // Routes that require a logged-in user.
 const PROTECTED_PREFIXES = [
@@ -25,8 +26,22 @@ const AUTH_PAGES = ["/login", "/register"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const token = req.cookies.get(SESSION_COOKIE_NAME)?.value;
-  const session = token ? await verifySessionToken(token) : null;
+
+  // Edge-safe session read: `getToken` verifies and decodes the Auth.js JWT
+  // straight from the request cookie without touching Prisma or bcryptjs, so it
+  // is safe on the Edge runtime (unlike importing `auth` from
+  // `@/lib/auth`, which pulls in the PrismaAdapter + Credentials/bcryptjs).
+  // The cookie name and secret must match the NextAuth config in
+  // `src/lib/auth/index.ts`.
+  const token = await getToken({
+    req,
+    secret: process.env.AUTH_SECRET,
+    cookieName: SESSION_COOKIE_NAME,
+    secureCookie: process.env.NODE_ENV === "production",
+  });
+  const session = token
+    ? { role: token.role as string | undefined }
+    : null;
 
   const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
   const isAdmin = ADMIN_PREFIXES.some((p) => pathname.startsWith(p));

@@ -154,6 +154,83 @@ to add a new AI/speech provider.
 
 ---
 
+## Free auth & database setup
+
+Google and GitHub sign-in are **optional** and only appear when their
+credentials are configured — the app always supports email/password. This
+section covers the free-tier setup for social sign-in and a hosted database.
+
+### Required environment variables
+
+Set these in your local `.env` (copied from `.env.example`). Names match
+`.env.example` exactly.
+
+| Variable | Purpose |
+| --- | --- |
+| `AUTH_SECRET` | Secret used to sign session JWTs — **must be at least 32 characters**. |
+| `AUTH_URL` | The app's base URL (e.g. `http://localhost:3000`); used to build OAuth callback URLs. |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID — enables the Google sign-in button. |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret (server-side only). |
+| `GITHUB_CLIENT_ID` | GitHub OAuth client ID — enables the GitHub sign-in button. |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth client secret (server-side only). |
+| `DATABASE_URL` | PostgreSQL connection string for the app database. |
+
+> Google sign-in requires **both** `GOOGLE_CLIENT_ID` and
+> `GOOGLE_CLIENT_SECRET`; GitHub sign-in requires **both** `GITHUB_CLIENT_ID`
+> and `GITHUB_CLIENT_SECRET`. If either half of a pair is missing, that
+> provider's button is hidden.
+
+### Where to get credentials
+
+- **Google OAuth client ID/secret:** [Google Cloud Console — Credentials](https://console.cloud.google.com/apis/credentials)
+- **GitHub OAuth app:** [GitHub Developer Settings](https://github.com/settings/developers)
+- **Neon (free Postgres):** [neon.tech](https://neon.tech)
+- **Supabase (free Postgres):** [supabase.com](https://supabase.com)
+- **Vercel Postgres:** [Vercel Postgres docs](https://vercel.com/docs/storage/vercel-postgres)
+
+### OAuth callback / redirect URLs
+
+Register these callback URLs with each provider. They follow the pattern
+`{AUTH_URL}/api/auth/callback/{provider}`.
+
+**Local development** (`AUTH_URL=http://localhost:3000`):
+
+```
+http://localhost:3000/api/auth/callback/google
+http://localhost:3000/api/auth/callback/github
+```
+
+**Production** (replace `<your-domain>` with your deployed host):
+
+```
+https://<your-domain>/api/auth/callback/google
+https://<your-domain>/api/auth/callback/github
+```
+
+### Keep secrets out of git
+
+Store all credentials in your local `.env`, which is **git-ignored**. Never
+commit real secrets — `.env.example` holds placeholders only. On a host
+(Vercel, etc.), set these as environment variables in the project settings
+instead of committing them.
+
+### Database connection notes
+
+Managed Postgres providers (Neon, Supabase, Vercel Postgres) usually require
+TLS, so append `?sslmode=require` to your `DATABASE_URL`:
+
+```env
+DATABASE_URL="postgresql://user:password@host/dbname?sslmode=require"
+```
+
+A local Postgres instance typically needs no TLS parameter:
+
+```env
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/speakmate?schema=public"
+```
+
+---
+
 ## Roadmap
 
 Phase 1 (this repo) delivers the core learning loop. Subsequent phases:

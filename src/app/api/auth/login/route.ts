@@ -6,13 +6,23 @@ import { handler, ok, fail } from "@/lib/api";
 
 export const runtime = "nodejs";
 
+/**
+ * Legacy credential login. Primary login now flows through Auth.js
+ * (`signIn("credentials")` -> `/api/auth/callback/credentials`), so this route
+ * is a thin compatibility fallback. It is retained to guarantee a working
+ * email/password endpoint regardless of client wiring. (Req 5.6)
+ */
 export const POST = handler(async (req: Request) => {
   const body = await req.json();
   const { email, password } = loginSchema.parse(body);
 
   const user = await prisma.user.findUnique({ where: { email } });
-  // Constant-ish response to avoid leaking which emails exist.
-  if (!user || !(await verifyPassword(password, user.passwordHash))) {
+  // Constant-ish response to avoid leaking which emails exist. `passwordHash`
+  // is now optional (OAuth-only accounts have none), so guard before verifying.
+  if (!user?.passwordHash) {
+    return fail("Incorrect email or password.", 401);
+  }
+  if (!(await verifyPassword(password, user.passwordHash))) {
     return fail("Incorrect email or password.", 401);
   }
 

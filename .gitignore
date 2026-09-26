@@ -33,3 +33,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# firebase (contains secrets / not part of the app build)
+firebase *.ts
+firebase.json
+.firebaserc
+/dataconnect/
+
+# local dev server logs
+devserver.out
+devserver.err

@@ -1,0 +1,387 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Fix async `cookies()` in `src/lib/auth/session.ts`": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410728235
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410745598
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410973472
+      }
+    ],
+    "1.2 Update `src/app/api/auth/logout/route.ts` to `await clearSessionCookie()`": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410728369
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410985363
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411126410
+      }
+    ],
+    "1.3 Fix async route `params` in `src/app/api/mistakes/[id]/route.ts`": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410728450
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410747066
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410974648
+      }
+    ],
+    "1.4 Verify baseline compiles": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410728528
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411136808
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411512017
+      }
+    ],
+    "2.1 Add and configure Vitest with fast-check": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410728605
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410747841
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410975498
+      }
+    ],
+    "3.1 Update `prisma/schema.prisma` for Auth.js": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410728681
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410986332
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411127222
+      }
+    ],
+    "3.2 Generate client and create the migration": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410728755
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411139028
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411512986
+      }
+    ],
+    "4.1 Add `next-auth` (v5 beta) and `@auth/prisma-adapter` dependencies": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410728834
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411138166
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411510604
+      }
+    ],
+    "4.2 Create `src/lib/auth/index.ts` with providers and NextAuth config": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410728917
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411522270
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411653630
+      }
+    ],
+    "4.3 Implement callbacks and events": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410729023
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411662106
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411936676
+      }
+    ],
+    "4.4 Add the `DATABASE_URL` startup guard": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410729102
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411523407
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411652472
+      }
+    ],
+    "5.1 Add the Auth.js catch-all route `src/app/api/auth/[...nextauth]/route.ts`": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410729206
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411663480
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411939451
+      }
+    ],
+    "5.2 Update `src/middleware.ts` to use Auth.js": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410729317
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411947810
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790412399143
+      }
+    ],
+    "5.3 Update `src/lib/auth/require.ts` to use `auth()`": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410729401
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411664652
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411938103
+      }
+    ],
+    "5.4 Update `src/components/AuthForm.tsx` and the login page for provider-aware UI": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410729500
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411949341
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790412400252
+      }
+    ],
+    "5.5 Update the register and logout routes to use Auth.js sessions": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410729608
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411950424
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790412397804
+      }
+    ],
+    "7. Checkpoint — ensure all property tests and typecheck pass": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410729736
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790412527333
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790413349679
+      }
+    ],
+    "9.1 Extend `.env.example` with commented placeholders": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410729820
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790412424468
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790412516625
+      }
+    ],
+    "9.2 Add a \"Free auth & database setup\" section to `README.md`": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410729908
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790412425735
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790412517782
+      }
+    ],
+    "10. Final verification and build gate": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410729984
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790414198312
+      },
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790414458554
+      }
+    ],
+    "2. Set up the test infrastructure": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790410975609
+      }
+    ],
+    "1. Root cause fixes — make the baseline compile (prerequisite gate)": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411512100
+      }
+    ],
+    "3. Extend the Prisma data model": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411513116
+      }
+    ],
+    "4. Implement Auth.js core configuration": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790411936801
+      }
+    ],
+    "5. Wire routes, middleware, and UI to Auth.js": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790412400462
+      }
+    ],
+    "9. Setup documentation": [
+      {
+        "executionId": "467a0fb5-d19b-4135-a8da-66090d70ede1",
+        "chatSessionId": "sess_c419e7e8-851a-482d-8478-cc9541c9a3c5",
+        "timestamp": 1790412518212
+      }
+    ]
+  }
+}

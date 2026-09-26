@@ -50,14 +50,17 @@ enum MistakeCategory {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  name         String
-  role         Role     @default(USER)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String? // optional for OAuth-only accounts
+  name          String
+  role          Role      @default(USER)
+  emailVerified DateTime? // Auth.js convention
+  image         String? // OAuth avatar
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
+  accounts       Account[]
   profile        Profile?
   settings       UserSettings?
   conversations  Conversation[]
@@ -69,28 +72,56 @@ model User {
   @@index([role])
 }
 
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
 model Profile {
-  id            String       @id @default(cuid())
-  userId        String       @unique
-  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  level         EnglishLevel @default(BEGINNER)
-  supportLang   String       @default("en") // en, te, hi, ta, kn, ml, bn, mr
-  goals         String[]     @default([])   // e.g. ["interview","daily_conversation"]
-  onboarded     Boolean      @default(false)
-  confidenceScore Int        @default(50)   // 0-100 learning indicator, not a measurement
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  id              String       @id @default(cuid())
+  userId          String       @unique
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level           EnglishLevel @default(BEGINNER)
+  supportLang     String       @default("en") // en, te, hi, ta, kn, ml, bn, mr
+  goals           String[]     @default([]) // e.g. ["interview","daily_conversation"]
+  onboarded       Boolean      @default(false)
+  confidenceScore Int          @default(50) // 0-100 learning indicator, not a measurement
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 }
 
 model UserSettings {
-  id                 String  @id @default(cuid())
-  userId             String  @unique
-  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  voiceEnabled       Boolean @default(true)
-  speakingRate       Float   @default(1.0) // TTS rate
-  notificationsOn    Boolean @default(true)
-  saveConversationHistory Boolean @default(true)
-  updatedAt          DateTime @updatedAt
+  id                      String   @id @default(cuid())
+  userId                  String   @unique
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  voiceEnabled            Boolean  @default(true)
+  speakingRate            Float    @default(1.0) // TTS rate
+  notificationsOn         Boolean  @default(true)
+  saveConversationHistory Boolean  @default(true)
+  updatedAt               DateTime @updatedAt
 }
 
 model Conversation {
@@ -136,13 +167,13 @@ model UserMistake {
 }
 
 model Vocabulary {
-  id            String   @id @default(cuid())
-  word          String   @unique
-  meaning       String
-  example       String
-  synonyms      String[] @default([])
-  usageNote     String   @default("")
-  createdAt     DateTime @default(now())
+  id        String   @id @default(cuid())
+  word      String   @unique
+  meaning   String
+  example   String
+  synonyms  String[] @default([])
+  usageNote String   @default("")
+  createdAt DateTime @default(now())
 
   userVocabulary UserVocabulary[]
 }
@@ -163,8 +194,8 @@ model UserVocabulary {
 }
 
 model Lesson {
-  id          String  @id @default(cuid())
-  slug        String  @unique
+  id          String   @id @default(cuid())
+  slug        String   @unique
   day         Int // position in the plan, e.g. Day 1..30
   title       String
   description String
@@ -175,26 +206,26 @@ model Lesson {
 }
 
 model LessonProgress {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   lessonId    String
-  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  completed   Boolean  @default(false)
-  score       Int      @default(0) // 0-100 learning indicator
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completed   Boolean   @default(false)
+  score       Int       @default(0) // 0-100 learning indicator
   completedAt DateTime?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
 
   @@unique([userId, lessonId])
   @@index([userId])
 }
 
 model DailyStreak {
-  id            String   @id @default(cuid())
-  userId        String   @unique
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  current       Int      @default(0)
-  longest       Int      @default(0)
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  current       Int       @default(0)
+  longest       Int       @default(0)
   lastActiveDay DateTime?
-  updatedAt     DateTime @updatedAt
+  updatedAt     DateTime  @updatedAt
 }
