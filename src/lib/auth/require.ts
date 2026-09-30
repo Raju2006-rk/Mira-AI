@@ -41,3 +41,29 @@ export async function requireUser(): Promise<SessionPayload> {
     name: user.name ?? "",
   };
 }
+
+/**
+ * Non-throwing server session accessor for server components and layouts.
+ * Reads the current Auth.js session and returns it normalized to
+ * {@link SessionPayload}, or `null` when there is no authenticated user.
+ *
+ * This is the Auth.js-backed replacement for the legacy custom `getSession()`
+ * from `@/lib/auth/session`: it verifies the `speakmate_session` cookie via
+ * Auth.js (next-auth v5) rather than the old hand-rolled jose scheme, and it
+ * never throws — callers can safely branch on the `null` result.
+ */
+export async function getServerSession(): Promise<SessionPayload | null> {
+  const session = await auth();
+  const user = session?.user as SessionUser | undefined;
+
+  if (!session || !user?.id) {
+    return null;
+  }
+
+  return {
+    userId: user.id,
+    email: user.email ?? "",
+    role: user.role ?? "USER",
+    name: user.name ?? "",
+  };
+}

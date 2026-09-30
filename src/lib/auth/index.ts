@@ -96,6 +96,11 @@ export function enabledProviderNames(env: NodeJS.ProcessEnv): string[] {
  */
 export const authConfig = {
   adapter: PrismaAdapter(prisma),
+  // Required for self-hosted/dev/preview: trust the runtime host
+  // (X-Forwarded-Host) instead of rejecting requests whose Host header
+  // Auth.js cannot verify. Without this, browser-based signIn and the
+  // OAuth/callback flow fail under Next.js dev/Turbopack and proxied previews.
+  trustHost: true,
   session: { strategy: "jwt", maxAge: SESSION_MAX_AGE_SECONDS },
   secret: getAuthSecret(process.env.AUTH_SECRET),
   providers: buildProviders(process.env),

@@ -43,3 +43,6 @@ firebase.json
 # local dev server logs
 devserver.out
 devserver.err
+
+# supabase CLI local temp
+/supabase/.temp/

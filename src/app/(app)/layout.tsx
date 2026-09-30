@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth/session";
+import { getServerSession } from "@/lib/auth/require";
 import { AppSidebar, AppBottomNav } from "@/components/AppNav";
 
 export default async function AppLayout({
@@ -7,7 +7,7 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession();
+  const session = await getServerSession();
   if (!session) redirect("/login");
 
   return (

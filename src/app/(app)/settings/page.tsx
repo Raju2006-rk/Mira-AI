@@ -1,9 +1,9 @@
-import { getSession } from "@/lib/auth/session";
+import { getServerSession } from "@/lib/auth/require";
 import { prisma } from "@/lib/db";
 import { SettingsPanel } from "@/components/SettingsPanel";
 
 export default async function SettingsPage() {
-  const session = await getSession();
+  const session = await getServerSession();
   const settings = await prisma.userSettings.findUnique({
     where: { userId: session!.userId },
   });

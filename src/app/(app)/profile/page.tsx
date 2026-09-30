@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/auth/session";
+import { getServerSession } from "@/lib/auth/require";
 import { prisma } from "@/lib/db";
 
 const LEVEL_LABEL: Record<string, string> = {
@@ -10,7 +10,7 @@ const LEVEL_LABEL: Record<string, string> = {
 };
 
 export default async function ProfilePage() {
-  const session = await getSession();
+  const session = await getServerSession();
   const profile = await prisma.profile.findUnique({
     where: { userId: session!.userId },
   });

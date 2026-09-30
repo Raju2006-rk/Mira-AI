@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { getSession } from "@/lib/auth/session";
+import { getServerSession } from "@/lib/auth/require";
 import { prisma } from "@/lib/db";
 import { greeting } from "@/lib/greeting";
 import { brand } from "@/config/brand";
 
 export default async function DashboardPage() {
-  const session = await getSession();
+  const session = await getServerSession();
   const userId = session!.userId;
   const firstName = session!.name.split(" ")[0];
 

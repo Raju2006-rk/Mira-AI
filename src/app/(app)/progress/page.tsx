@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/auth/session";
+import { getServerSession } from "@/lib/auth/require";
 import { prisma } from "@/lib/db";
 
 function Ring({ value, label }: { value: number; label: string }) {
@@ -48,7 +48,7 @@ function Ring({ value, label }: { value: number; label: string }) {
 }
 
 export default async function ProgressPage() {
-  const session = await getSession();
+  const session = await getServerSession();
   const userId = session!.userId;
 
   const [profile, streak, turns, mistakes, words] = await Promise.all([

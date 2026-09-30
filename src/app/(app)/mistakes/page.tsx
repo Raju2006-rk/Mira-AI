@@ -1,9 +1,9 @@
-import { getSession } from "@/lib/auth/session";
+import { getServerSession } from "@/lib/auth/require";
 import { prisma } from "@/lib/db";
 import { MistakeList } from "@/components/MistakeList";
 
 export default async function MistakesPage() {
-  const session = await getSession();
+  const session = await getServerSession();
   const mistakes = await prisma.userMistake.findMany({
     where: { userId: session!.userId },
     orderBy: [{ occurrences: "desc" }, { updatedAt: "desc" }],
