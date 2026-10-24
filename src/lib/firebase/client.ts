@@ -1,12 +1,18 @@
 /**
  * Firebase CLIENT SDK — runs in the browser only.
  *
- * These config values are PUBLIC (they identify your Firebase project) and
- * are intentionally safe to commit. Real security comes from Firebase
- * Security Rules and the Admin SDK on the server — not from hiding these.
+ * Config values are hardcoded (not from env vars) because:
+ *  1. NEXT_PUBLIC_ vars are sometimes undefined during SSR/pre-rendering,
+ *     causing "auth/invalid-api-key" build errors.
+ *  2. These values are PUBLIC — they only identify the Firebase project.
+ *     Security comes from Firebase Security Rules and the Admin SDK, not
+ *     from hiding these strings (they are visible in the browser anyway).
+ *
+ * Firebase is initialised LAZILY (only when getFirebaseAuth() is called)
+ * so module evaluation never touches the SDK during server-side rendering.
  */
 
-import { initializeApp, getApps, getApp } from "firebase/app";
+import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -14,26 +20,47 @@ import {
   signOut,
   updateProfile,
   onAuthStateChanged,
+  type Auth,
   type User,
 } from "firebase/auth";
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+// ── Hardcoded public config (safe to commit) ────────────────────────────────
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCombIOX1v3QT-qIfkn14B7_jtP2_xEzx4",
+  authDomain: "mira-ai-ca492.firebaseapp.com",
+  projectId: "mira-ai-ca492",
+  storageBucket: "mira-ai-ca492.firebasestorage.app",
+  messagingSenderId: "82708260891",
+  appId: "1:82708260891:web:56897045af882e9fc270be",
+  measurementId: "G-4RR9S1NB22",
 };
+// ────────────────────────────────────────────────────────────────────────────
 
-// Prevent double-initialisation under Next.js hot-reload.
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
+let _app: FirebaseApp | null = null;
+let _auth: Auth | null = null;
+
+/**
+ * Returns the Firebase App singleton. Safe to call multiple times.
+ * Only initialises on first call — never during SSR/build.
+ */
+export function getFirebaseApp(): FirebaseApp {
+  if (_app) return _app;
+  _app = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
+  return _app;
+}
+
+/**
+ * Returns the Firebase Auth singleton.
+ * Always call this inside a browser event handler or useEffect — never at
+ * module top level.
+ */
+export function getFirebaseAuth(): Auth {
+  if (_auth) return _auth;
+  _auth = getAuth(getFirebaseApp());
+  return _auth;
+}
 
 export {
-  app,
-  auth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,

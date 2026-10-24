@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
-  auth,
+  getFirebaseAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
@@ -56,21 +56,21 @@ export function AuthForm({
     setLoading(true);
 
     try {
+      // Get the Firebase Auth instance lazily — this is the first point
+      // where Firebase is initialised, and it only runs in the browser.
+      const auth = getFirebaseAuth();
       let userCredential;
 
       if (isRegister) {
-        // 1. Create Firebase user
         userCredential = await createUserWithEmailAndPassword(
           auth,
           email,
           password,
         );
-        // 2. Set display name
         await updateProfile(userCredential.user, {
           displayName: name.trim() || email.split("@")[0],
         });
       } else {
-        // 1. Sign in with Firebase
         userCredential = await signInWithEmailAndPassword(
           auth,
           email,
@@ -78,10 +78,8 @@ export function AuthForm({
         );
       }
 
-      // 3. Get the Firebase ID token
+      // Get the Firebase ID token and exchange for a server session cookie.
       const idToken = await userCredential.user.getIdToken();
-
-      // 4. Exchange for a server-side session cookie
       const res = await fetch("/api/auth/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
