@@ -1,12 +1,14 @@
 import { getServerSession } from "@/lib/auth/require";
-import { prisma } from "@/lib/db";
+import { prisma, safeDb } from "@/lib/db";
 import { SettingsPanel } from "@/components/SettingsPanel";
 
 export default async function SettingsPage() {
   const session = await getServerSession();
-  const settings = await prisma.userSettings.findUnique({
-    where: { userId: session!.userId },
-  });
+  const settings = await safeDb(
+    () =>
+      prisma.userSettings.findUnique({ where: { userId: session!.userId } }),
+    null,
+  );
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">

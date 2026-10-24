@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { prisma } from "@/lib/db";
+import { prisma, safeDb } from "@/lib/db";
 import { requireUser } from "@/lib/auth/require";
 import { handler, ok } from "@/lib/api";
 
@@ -14,19 +14,24 @@ const schema = z.object({
 
 export const GET = handler(async () => {
   const session = await requireUser();
-  const settings = await prisma.userSettings.findUnique({
-    where: { userId: session.userId },
-  });
+  const settings = await safeDb(
+    () => prisma.userSettings.findUnique({ where: { userId: session.userId } }),
+    null,
+  );
   return ok({ settings });
 });
 
 export const PATCH = handler(async (req: Request) => {
   const session = await requireUser();
   const data = schema.parse(await req.json());
-  const settings = await prisma.userSettings.upsert({
-    where: { userId: session.userId },
-    update: data,
-    create: { userId: session.userId, ...data },
-  });
+  const settings = await safeDb(
+    () =>
+      prisma.userSettings.upsert({
+        where: { userId: session.userId },
+        update: data,
+        create: { userId: session.userId, ...data },
+      }),
+    null,
+  );
   return ok({ settings });
 });

@@ -32,7 +32,14 @@ function friendlyError(code: string): string {
   return map[code] ?? "Something went wrong. Please try again.";
 }
 
-export function AuthForm({ mode }: { mode: Mode }) {
+export function AuthForm({
+  mode,
+  enabledProviders: _enabledProviders,
+}: {
+  mode: Mode;
+  /** @deprecated Firebase handles all providers — this prop is ignored. */
+  enabledProviders?: string[];
+}) {
   const router = useRouter();
   const params = useSearchParams();
   const [name, setName] = useState("");

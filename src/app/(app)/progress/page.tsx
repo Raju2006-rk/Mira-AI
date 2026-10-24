@@ -1,5 +1,5 @@
 import { getServerSession } from "@/lib/auth/require";
-import { prisma } from "@/lib/db";
+import { prisma, safeDb } from "@/lib/db";
 
 function Ring({ value, label }: { value: number; label: string }) {
   const clamped = Math.max(0, Math.min(100, value));
@@ -52,16 +52,19 @@ export default async function ProgressPage() {
   const userId = session!.userId;
 
   const [profile, streak, turns, mistakes, words] = await Promise.all([
-    prisma.profile.findUnique({ where: { userId } }),
-    prisma.dailyStreak.findUnique({ where: { userId } }),
-    prisma.conversationMessage.count({
-      where: { conversation: { userId }, role: "USER" },
-    }),
-    prisma.userMistake.count({ where: { userId } }),
-    prisma.userVocabulary.count({ where: { userId } }),
+    safeDb(() => prisma.profile.findUnique({ where: { userId } }), null),
+    safeDb(() => prisma.dailyStreak.findUnique({ where: { userId } }), null),
+    safeDb(
+      () =>
+        prisma.conversationMessage.count({
+          where: { conversation: { userId }, role: "USER" },
+        }),
+      0,
+    ),
+    safeDb(() => prisma.userMistake.count({ where: { userId } }), 0),
+    safeDb(() => prisma.userVocabulary.count({ where: { userId } }), 0),
   ]);
 
-  // Learning indicators (not scientific measurements — spec §10, §23).
   const confidence = profile?.confidenceScore ?? 50;
   const speaking = Math.min(100, 40 + turns * 3);
   const grammar = Math.max(10, 90 - mistakes * 4);
@@ -75,13 +78,11 @@ export default async function ProgressPage() {
           scores.
         </p>
       </div>
-
       <div className="card grid grid-cols-1 gap-6 sm:grid-cols-3">
         <Ring value={confidence} label="Confidence" />
         <Ring value={speaking} label="Speaking" />
         <Ring value={grammar} label="Grammar" />
       </div>
-
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[
           { label: "Current streak", value: `${streak?.current ?? 0} days` },

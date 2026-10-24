@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getServerSession } from "@/lib/auth/require";
-import { prisma } from "@/lib/db";
+import { prisma, safeDb } from "@/lib/db";
 import { greeting } from "@/lib/greeting";
 import { brand } from "@/config/brand";
 
@@ -10,17 +10,25 @@ export default async function DashboardPage() {
   const firstName = session!.name.split(" ")[0];
 
   const [streak, mistakes, words, turns, recentMistakes] = await Promise.all([
-    prisma.dailyStreak.findUnique({ where: { userId } }),
-    prisma.userMistake.count({ where: { userId } }),
-    prisma.userVocabulary.count({ where: { userId } }),
-    prisma.conversationMessage.count({
-      where: { conversation: { userId }, role: "USER" },
-    }),
-    prisma.userMistake.findMany({
-      where: { userId },
-      orderBy: { updatedAt: "desc" },
-      take: 3,
-    }),
+    safeDb(() => prisma.dailyStreak.findUnique({ where: { userId } }), null),
+    safeDb(() => prisma.userMistake.count({ where: { userId } }), 0),
+    safeDb(() => prisma.userVocabulary.count({ where: { userId } }), 0),
+    safeDb(
+      () =>
+        prisma.conversationMessage.count({
+          where: { conversation: { userId }, role: "USER" },
+        }),
+      0,
+    ),
+    safeDb(
+      () =>
+        prisma.userMistake.findMany({
+          where: { userId },
+          orderBy: { updatedAt: "desc" },
+          take: 3,
+        }),
+      [],
+    ),
   ]);
 
   const stats = [
@@ -69,7 +77,11 @@ export default async function DashboardPage() {
             desc: "Make any sentence natural",
           },
           { href: "/mistakes", title: "My mistakes", desc: "Review & learn" },
-          { href: "/progress", title: "Your progress", desc: "See your trend" },
+          {
+            href: "/progress",
+            title: "Your progress",
+            desc: "See your trend",
+          },
         ].map((c) => (
           <Link
             key={c.href}

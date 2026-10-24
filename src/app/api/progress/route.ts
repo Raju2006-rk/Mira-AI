@@ -1,12 +1,12 @@
-import { prisma } from "@/lib/db";
+import { prisma, safeDb } from "@/lib/db";
 import { requireUser } from "@/lib/auth/require";
 import { handler, ok } from "@/lib/api";
 
 export const runtime = "nodejs";
 
-// Aggregate learning indicators for the progress dashboard (spec §23).
 export const GET = handler(async () => {
   const session = await requireUser();
+  const uid = session.userId;
 
   const [
     conversations,
@@ -17,17 +17,28 @@ export const GET = handler(async () => {
     streak,
     lessons,
   ] = await Promise.all([
-    prisma.conversation.count({ where: { userId: session.userId } }),
-    prisma.conversationMessage.count({
-      where: { conversation: { userId: session.userId }, role: "USER" },
-    }),
-    prisma.userMistake.count({ where: { userId: session.userId } }),
-    prisma.userVocabulary.count({ where: { userId: session.userId } }),
-    prisma.profile.findUnique({ where: { userId: session.userId } }),
-    prisma.dailyStreak.findUnique({ where: { userId: session.userId } }),
-    prisma.lessonProgress.count({
-      where: { userId: session.userId, completed: true },
-    }),
+    safeDb(() => prisma.conversation.count({ where: { userId: uid } }), 0),
+    safeDb(
+      () =>
+        prisma.conversationMessage.count({
+          where: { conversation: { userId: uid }, role: "USER" },
+        }),
+      0,
+    ),
+    safeDb(() => prisma.userMistake.count({ where: { userId: uid } }), 0),
+    safeDb(() => prisma.userVocabulary.count({ where: { userId: uid } }), 0),
+    safeDb(() => prisma.profile.findUnique({ where: { userId: uid } }), null),
+    safeDb(
+      () => prisma.dailyStreak.findUnique({ where: { userId: uid } }),
+      null,
+    ),
+    safeDb(
+      () =>
+        prisma.lessonProgress.count({
+          where: { userId: uid, completed: true },
+        }),
+      0,
+    ),
   ]);
 
   return ok({
@@ -37,9 +48,6 @@ export const GET = handler(async () => {
     wordsSaved: savedWords,
     lessonsCompleted: lessons,
     confidenceScore: profile?.confidenceScore ?? 50,
-    streak: {
-      current: streak?.current ?? 0,
-      longest: streak?.longest ?? 0,
-    },
+    streak: { current: streak?.current ?? 0, longest: streak?.longest ?? 0 },
   });
 });

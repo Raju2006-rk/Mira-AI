@@ -1,5 +1,5 @@
 import { getServerSession } from "@/lib/auth/require";
-import { prisma } from "@/lib/db";
+import { prisma, safeDb } from "@/lib/db";
 
 const LEVEL_LABEL: Record<string, string> = {
   BEGINNER: "Beginner",
@@ -11,9 +11,10 @@ const LEVEL_LABEL: Record<string, string> = {
 
 export default async function ProfilePage() {
   const session = await getServerSession();
-  const profile = await prisma.profile.findUnique({
-    where: { userId: session!.userId },
-  });
+  const profile = await safeDb(
+    () => prisma.profile.findUnique({ where: { userId: session!.userId } }),
+    null,
+  );
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">

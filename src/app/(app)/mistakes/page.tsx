@@ -1,13 +1,17 @@
 import { getServerSession } from "@/lib/auth/require";
-import { prisma } from "@/lib/db";
+import { prisma, safeDb } from "@/lib/db";
 import { MistakeList } from "@/components/MistakeList";
 
 export default async function MistakesPage() {
   const session = await getServerSession();
-  const mistakes = await prisma.userMistake.findMany({
-    where: { userId: session!.userId },
-    orderBy: [{ occurrences: "desc" }, { updatedAt: "desc" }],
-  });
+  const mistakes = await safeDb(
+    () =>
+      prisma.userMistake.findMany({
+        where: { userId: session!.userId },
+        orderBy: [{ occurrences: "desc" }, { updatedAt: "desc" }],
+      }),
+    [],
+  );
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">

@@ -1,21 +1,31 @@
-import { prisma } from "@/lib/db";
+import { prisma, safeDb } from "@/lib/db";
 
 export default async function AdminDashboard() {
   const [users, conversations, messages, mistakes, lessons] = await Promise.all(
     [
-      prisma.user.count(),
-      prisma.conversation.count(),
-      prisma.conversationMessage.count(),
-      prisma.userMistake.count(),
-      prisma.lesson.count(),
+      safeDb(() => prisma.user.count(), 0),
+      safeDb(() => prisma.conversation.count(), 0),
+      safeDb(() => prisma.conversationMessage.count(), 0),
+      safeDb(() => prisma.userMistake.count(), 0),
+      safeDb(() => prisma.lesson.count(), 0),
     ],
   );
 
-  const recentUsers = await prisma.user.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 8,
-    select: { id: true, name: true, email: true, role: true, createdAt: true },
-  });
+  const recentUsers = await safeDb(
+    () =>
+      prisma.user.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 8,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+        },
+      }),
+    [],
+  );
 
   const stats = [
     { label: "Total users", value: users },
@@ -40,32 +50,41 @@ export default async function AdminDashboard() {
 
       <div className="card">
         <h2 className="font-semibold text-slate-900">Recent users</h2>
-        <div className="mt-3 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="text-xs uppercase text-slate-400">
-              <tr>
-                <th className="py-2">Name</th>
-                <th className="py-2">Email</th>
-                <th className="py-2">Role</th>
-                <th className="py-2">Joined</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentUsers.map((u) => (
-                <tr key={u.id} className="border-t border-slate-100">
-                  <td className="py-2 font-medium text-slate-900">{u.name}</td>
-                  <td className="py-2 text-slate-600">{u.email}</td>
-                  <td className="py-2">
-                    <span className="chip">{u.role}</span>
-                  </td>
-                  <td className="py-2 text-slate-500">
-                    {u.createdAt.toISOString().slice(0, 10)}
-                  </td>
+        {recentUsers.length === 0 ? (
+          <p className="mt-3 text-sm text-slate-500">
+            No database connected — user data will appear here once a PostgreSQL
+            instance is configured.
+          </p>
+        ) : (
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="text-xs uppercase text-slate-400">
+                <tr>
+                  <th className="py-2">Name</th>
+                  <th className="py-2">Email</th>
+                  <th className="py-2">Role</th>
+                  <th className="py-2">Joined</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {recentUsers.map((u) => (
+                  <tr key={u.id} className="border-t border-slate-100">
+                    <td className="py-2 font-medium text-slate-900">
+                      {u.name}
+                    </td>
+                    <td className="py-2 text-slate-600">{u.email}</td>
+                    <td className="py-2">
+                      <span className="chip">{u.role}</span>
+                    </td>
+                    <td className="py-2 text-slate-500">
+                      {u.createdAt.toISOString().slice(0, 10)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
