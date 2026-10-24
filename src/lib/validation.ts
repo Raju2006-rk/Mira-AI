@@ -15,7 +15,10 @@ export const loginSchema = z.object({
 });
 
 export const chatSchema = z.object({
-  conversationId: z.string().optional(),
+  conversationId: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? undefined),
   message: z.string().min(1, "Say something first").max(2000),
   mode: z
     .enum([

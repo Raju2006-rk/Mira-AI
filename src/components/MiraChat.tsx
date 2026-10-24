@@ -90,7 +90,7 @@ export function MiraChat() {
         setStatus("idle");
         return;
       }
-      conversationId.current = json.data.conversationId;
+      conversationId.current = json.data.conversationId ?? undefined;
       const reply: string = json.data.reply;
       const corrections: Correction[] = json.data.corrections ?? [];
       setMessages((m) => [
