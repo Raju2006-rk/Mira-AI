@@ -1,14 +1,11 @@
-import { signOut } from "@/lib/auth";
+import { clearSessionCookie } from "@/lib/auth/session";
 import { handler, ok } from "@/lib/api";
 
 export const runtime = "nodejs";
 
-/**
- * Log out via Auth.js. `signOut({ redirect: false })` clears the Auth.js
- * session cookie without issuing an HTTP redirect, so this route can return
- * its standard JSON envelope. (Req 5.6)
- */
+// Clears the server-side session cookie.
+// Firebase client-side sign-out is handled in AppNav before this is called.
 export const POST = handler(async () => {
-  await signOut({ redirect: false });
+  await clearSessionCookie();
   return ok({ loggedOut: true });
 });

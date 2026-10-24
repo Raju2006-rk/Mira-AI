@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "./Logo";
+import { auth, signOut as firebaseSignOut } from "@/lib/firebase/client";
 
 const NAV = [
   { href: "/dashboard", label: "Home", icon: "home" },
@@ -74,7 +75,8 @@ export function AppSidebar({ name }: { name: string }) {
   const router = useRouter();
 
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await firebaseSignOut(auth); // clear Firebase session
+    await fetch("/api/auth/logout", { method: "POST" }); // clear server cookie
     router.push("/login");
     router.refresh();
   }

@@ -2,107 +2,102 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
 import Link from "next/link";
+import {
+  auth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
+} from "@/lib/firebase/client";
 
 type Mode = "login" | "register";
 
-/**
- * Map an Auth.js OAuth `error` query param (delivered to the configured error
- * page, `/login`) to a friendly, non-technical message. (Req 1.4, 2.4, 8.4)
- *
- * Auth.js uses a small set of well-known error codes; anything unrecognized
- * falls back to a generic sign-in failure message so we never leak internals.
- */
-function oauthErrorMessage(code: string): string {
-  switch (code) {
-    case "OAuthAccountNotLinked":
-      return "That email is already registered with a different sign-in method. Please use the method you signed up with.";
-    case "AccessDenied":
-      return "Sign-in was cancelled or not permitted. Please try again.";
-    case "Configuration":
-      return "Sign-in is temporarily unavailable. Please try again later.";
-    case "Verification":
-      return "This sign-in link is invalid or has expired. Please try again.";
-    default:
-      return "Sign-in failed. Please try again.";
-  }
+/** Map Firebase Auth error codes to friendly, non-technical messages. */
+function friendlyError(code: string): string {
+  const map: Record<string, string> = {
+    "auth/email-already-in-use": "An account with this email already exists.",
+    "auth/invalid-email": "Please enter a valid email address.",
+    "auth/weak-password": "Password should be at least 6 characters.",
+    "auth/user-not-found": "No account found with this email.",
+    "auth/wrong-password": "Incorrect password. Please try again.",
+    "auth/invalid-credential": "Incorrect email or password.",
+    "auth/too-many-requests":
+      "Too many attempts. Please wait a moment and try again.",
+    "auth/network-request-failed":
+      "Network error. Check your connection and try again.",
+    "auth/user-disabled": "This account has been disabled.",
+    "auth/operation-not-allowed":
+      "Email/password sign-in is not enabled in Firebase. Please enable it in the Firebase console.",
+  };
+  return map[code] ?? "Something went wrong. Please try again.";
 }
 
-export function AuthForm({
-  mode,
-  enabledProviders = ["credentials"],
-}: {
-  mode: Mode;
-  /**
-   * The provider ids the server has configured (e.g.
-   * `["credentials", "google", "github"]`). OAuth buttons render only for the
-   * providers present here. (Req 8.2, 8.3)
-   */
-  enabledProviders?: string[];
-}) {
+export function AuthForm({ mode }: { mode: Mode }) {
   const router = useRouter();
   const params = useSearchParams();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // Seed the alert region from any OAuth `error` query param on first render.
-  const oauthError = params.get("error");
-  const [error, setError] = useState<string | null>(
-    oauthError ? oauthErrorMessage(oauthError) : null,
-  );
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const isRegister = mode === "register";
-  const showGoogle = enabledProviders.includes("google");
-  const showGitHub = enabledProviders.includes("github");
-  const hasOAuth = showGoogle || showGitHub;
-
-  function redirectAfterAuth() {
-    const next = params.get("next") ?? "/dashboard";
-    router.push(next);
-    router.refresh();
-  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
     try {
+      let userCredential;
+
       if (isRegister) {
-        // 1) Create the account. The register route no longer sets a session
-        //    cookie (task 5.5), so we establish the session below.
-        const res = await fetch("/api/auth/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password }),
+        // 1. Create Firebase user
+        userCredential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password,
+        );
+        // 2. Set display name
+        await updateProfile(userCredential.user, {
+          displayName: name.trim() || email.split("@")[0],
         });
-        const json = await res.json();
-        if (!res.ok || !json.ok) {
-          setError(json.error ?? "Something went wrong. Please try again.");
-          return;
-        }
+      } else {
+        // 1. Sign in with Firebase
+        userCredential = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password,
+        );
       }
 
-      // 2) Establish the session via Auth.js Credentials (both login and the
-      //    post-register step). `redirect: false` keeps us on the client so we
-      //    can surface errors and navigate ourselves.
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
+      // 3. Get the Firebase ID token
+      const idToken = await userCredential.user.getIdToken();
+
+      // 4. Exchange for a server-side session cookie
+      const res = await fetch("/api/auth/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idToken,
+          name: isRegister
+            ? name.trim() || email.split("@")[0]
+            : (userCredential.user.displayName ?? email.split("@")[0]),
+        }),
       });
 
-      if (!result || result.error) {
-        setError("Incorrect email or password.");
+      const json = await res.json();
+      if (!res.ok || !json.ok) {
+        setError(json.error ?? "Something went wrong. Please try again.");
         return;
       }
 
-      redirectAfterAuth();
-    } catch {
-      setError(
-        "Couldn't reach the server. Check your connection and try again.",
-      );
+      const next = params.get("next") ?? "/dashboard";
+      router.push(next);
+      router.refresh();
+    } catch (err) {
+      const code = (err as { code?: string })?.code ?? "";
+      setError(friendlyError(code));
     } finally {
       setLoading(false);
     }
@@ -161,7 +156,7 @@ export function AuthForm({
             className="input"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder={isRegister ? "At least 8 characters" : "Your password"}
+            placeholder={isRegister ? "At least 6 characters" : "Your password"}
             autoComplete={isRegister ? "new-password" : "current-password"}
             required
           />
@@ -180,41 +175,6 @@ export function AuthForm({
           {loading ? "Please wait…" : isRegister ? "Create account" : "Log in"}
         </button>
       </form>
-
-      {hasOAuth && (
-        <>
-          <div className="my-6 flex items-center gap-3">
-            <span className="h-px flex-1 bg-slate-200" />
-            <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
-              or
-            </span>
-            <span className="h-px flex-1 bg-slate-200" />
-          </div>
-
-          <div className="space-y-3">
-            {showGoogle && (
-              <button
-                type="button"
-                className="btn-secondary w-full"
-                onClick={() => signIn("google")}
-                disabled={loading}
-              >
-                Continue with Google
-              </button>
-            )}
-            {showGitHub && (
-              <button
-                type="button"
-                className="btn-secondary w-full"
-                onClick={() => signIn("github")}
-                disabled={loading}
-              >
-                Continue with GitHub
-              </button>
-            )}
-          </div>
-        </>
-      )}
 
       <p className="mt-4 text-center text-sm text-slate-500">
         {isRegister ? (
