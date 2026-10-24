@@ -1,13 +1,15 @@
 /**
- * Thin wrappers around the browser Web Speech API for speech-to-text (STT) and
- * text-to-speech (TTS). These run entirely client-side and need no API keys.
+ * Browser Web Speech API wrappers — STT (speech-to-text) and TTS
+ * (text-to-speech). Runs entirely client-side, no API keys required.
  *
- * Everything degrades gracefully: callers check `isSpeechRecognitionSupported`
- * / `isSpeechSynthesisSupported` and fall back to text input when unsupported
- * (spec §36, §43).
+ * TTS voice selection targets an Indian English male voice using a priority
+ * list that covers Chrome, Edge, Safari, Firefox, and Android WebView on
+ * Indian devices. Falls back gracefully through progressively looser matches
+ * so speech always works even when no Indian voice is installed.
  */
 
-// The Web Speech API types aren't in the DOM lib, so we declare what we use.
+// ─── Type declarations for Web Speech API (not in DOM lib by default) ────────
+
 type SpeechRecognitionResultLike = {
   0: { transcript: string };
   isFinal: boolean;
@@ -44,12 +46,177 @@ export function isSpeechSynthesisSupported(): boolean {
   return typeof window !== "undefined" && "speechSynthesis" in window;
 }
 
+// ─── Voice selection ──────────────────────────────────────────────────────────
+
+/**
+ * Ordered list of voice name fragments that identify Indian English male
+ * voices across browsers and platforms. Matching is case-insensitive substring.
+ *
+ * Priority:
+ *  1. Named Indian male voices available in Chrome/Edge on Windows/Android
+ *  2. Any voice whose name contains "India" + male indicator
+ *  3. Any en-IN voice
+ *  4. Any English male voice
+ *  5. Any English voice (final fallback)
+ */
+const INDIAN_MALE_VOICE_NAMES = [
+  // Chrome / Edge (Windows, Android)
+  "ravi", // Google Hindi — closest Indian male English
+  "heera", // Microsoft Heera (en-IN, female fallback — skip below)
+  "hemant", // Microsoft Hemant (hi-IN male)
+  "kalpana", // skip (female)
+  "arun", // Some Android TTS engines
+  "mohan",
+  "arjun",
+  "raj",
+  "deepak",
+  // Generic India markers
+  "india",
+  "hindi",
+];
+
+// Names that indicate a female voice — used to downrank matches.
+const FEMALE_INDICATORS = [
+  "female",
+  "woman",
+  "girl",
+  "zira",
+  "heera",
+  "kalpana",
+  "aditi",
+];
+
+function isFemale(v: SpeechSynthesisVoice): boolean {
+  const n = v.name.toLowerCase();
+  return FEMALE_INDICATORS.some((f) => n.includes(f));
+}
+
+function isMale(v: SpeechSynthesisVoice): boolean {
+  return !isFemale(v);
+}
+
+function scoreVoice(v: SpeechSynthesisVoice): number {
+  const name = v.name.toLowerCase();
+  const lang = v.lang.toLowerCase();
+
+  // Tier 1: named Indian male voice
+  for (let i = 0; i < INDIAN_MALE_VOICE_NAMES.length; i++) {
+    if (name.includes(INDIAN_MALE_VOICE_NAMES[i]) && isMale(v)) {
+      return 1000 - i;
+    }
+  }
+  // Tier 2: en-IN male
+  if (lang.startsWith("en-in") && isMale(v)) return 500;
+  // Tier 3: en-IN any gender
+  if (lang.startsWith("en-in")) return 400;
+  // Tier 4: any Indian language male
+  if (
+    (lang.startsWith("hi") || lang.startsWith("en")) &&
+    name.includes("india") &&
+    isMale(v)
+  )
+    return 300;
+  // Tier 5: en-US/en-GB male
+  if (lang.startsWith("en") && isMale(v)) return 100;
+  // Tier 6: any English voice
+  if (lang.startsWith("en")) return 10;
+  return 0;
+}
+
+let _selectedVoice: SpeechSynthesisVoice | null = null;
+let _voicesLoaded = false;
+
+/**
+ * Call this once on mount to pre-load the voice list (async on most browsers).
+ * Resolves when voices are available or after a 3-second timeout.
+ */
+export function loadVoices(): Promise<void> {
+  return new Promise((resolve) => {
+    if (!isSpeechSynthesisSupported()) {
+      resolve();
+      return;
+    }
+    const ss = window.speechSynthesis;
+
+    function pick() {
+      const voices = ss.getVoices();
+      if (voices.length === 0) return false;
+      const scored = voices
+        .map((v) => ({ v, score: scoreVoice(v) }))
+        .filter(({ score }) => score > 0)
+        .sort((a, b) => b.score - a.score);
+      _selectedVoice = scored[0]?.v ?? voices[0] ?? null;
+      _voicesLoaded = true;
+      return true;
+    }
+
+    if (pick()) {
+      resolve();
+      return;
+    }
+
+    // Voices not ready yet — wait for the event.
+    const onVoicesChanged = () => {
+      pick();
+      resolve();
+    };
+    ss.addEventListener("voiceschanged", onVoicesChanged, { once: true });
+    // Safety timeout — give up after 3 s and use whatever is available.
+    setTimeout(() => {
+      pick();
+      resolve();
+    }, 3000);
+  });
+}
+
+export function getSelectedVoiceName(): string {
+  return _selectedVoice?.name ?? "Default";
+}
+
+// ─── Public TTS function ──────────────────────────────────────────────────────
+
+/**
+ * Speaks `text` using the best available Indian English male voice.
+ * Falls back to the browser default when no suitable voice is found.
+ */
+export function speak(text: string, rate = 0.95): void {
+  if (!isSpeechSynthesisSupported()) return;
+  window.speechSynthesis.cancel();
+
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-IN";
+  u.rate = rate;
+  u.pitch = 0.95; // slightly deeper, more natural male pitch
+
+  if (_voicesLoaded && _selectedVoice) {
+    u.voice = _selectedVoice;
+  } else {
+    // Voices not loaded yet — try a quick synchronous pick.
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      const scored = voices
+        .map((v) => ({ v, score: scoreVoice(v) }))
+        .filter(({ score }) => score > 0)
+        .sort((a, b) => b.score - a.score);
+      if (scored[0]) u.voice = scored[0].v;
+    }
+  }
+
+  window.speechSynthesis.speak(u);
+}
+
+export function stopSpeaking(): void {
+  if (isSpeechSynthesisSupported()) window.speechSynthesis.cancel();
+}
+
+// ─── STT ──────────────────────────────────────────────────────────────────────
+
 export interface Recognizer {
   stop(): void;
 }
 
 /**
- * Starts listening. Calls `onFinal` with the recognized text when the user
+ * Starts listening. Calls `onFinal` with the recognised text when the user
  * stops. Calls `onError` with a friendly message on failure.
  */
 export function startListening(opts: {
@@ -67,7 +234,8 @@ export function startListening(opts: {
     return null;
   }
   const rec = new Ctor();
-  rec.lang = opts.lang ?? "en-US";
+  // en-IN so the recogniser understands Indian English accents better.
+  rec.lang = opts.lang ?? "en-IN";
   rec.continuous = false;
   rec.interimResults = true;
 
@@ -106,18 +274,4 @@ export function startListening(opts: {
     return null;
   }
   return { stop: () => rec.stop() };
-}
-
-/** Speaks the given text using the browser's TTS voice. */
-export function speak(text: string, rate = 1): void {
-  if (!isSpeechSynthesisSupported()) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "en-US";
-  u.rate = rate;
-  window.speechSynthesis.speak(u);
-}
-
-export function stopSpeaking(): void {
-  if (isSpeechSynthesisSupported()) window.speechSynthesis.cancel();
 }

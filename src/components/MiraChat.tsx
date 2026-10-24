@@ -6,6 +6,8 @@ import {
   startListening,
   speak,
   stopSpeaking,
+  loadVoices,
+  getSelectedVoiceName,
   isSpeechRecognitionSupported,
   isSpeechSynthesisSupported,
   type Recognizer,
@@ -47,6 +49,7 @@ export function MiraChat() {
   const [mode, setMode] =
     useState<(typeof MODES)[number]["id"]>("CONVERSATION");
   const [voiceOn, setVoiceOn] = useState(true);
+  const [voiceName, setVoiceName] = useState<string>("");
   const conversationId = useRef<string | undefined>(undefined);
   const recognizer = useRef<Recognizer | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -64,6 +67,15 @@ export function MiraChat() {
   }, [messages, interim]);
 
   useEffect(() => () => stopSpeaking(), []);
+
+  // Pre-load voices as soon as the component mounts so the Indian male
+  // voice is selected before the first TTS call.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    loadVoices().then(() => {
+      setVoiceName(getSelectedVoiceName());
+    });
+  }, []);
 
   async function send(text: string) {
     const trimmed = text.trim();
@@ -176,8 +188,14 @@ export function MiraChat() {
             }}
             className="ml-auto rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600"
             aria-pressed={voiceOn}
+            title={voiceName ? `Voice: ${voiceName}` : "Toggle voice"}
           >
             {voiceOn ? "🔊 Voice on" : "🔇 Voice off"}
+            {voiceName && (
+              <span className="ml-1 opacity-60">
+                · {voiceName.split(" ").slice(0, 3).join(" ")}
+              </span>
+            )}
           </button>
         )}
       </div>
